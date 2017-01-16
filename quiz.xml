@@ -1,0 +1,134 @@
+<quiz>
+	<header>
+		<title>Example Quiz</title>
+		<description>For the purposes of demonstrating proposed technology</description>
+		<toss_ups>2</toss_ups>
+		<bonus_sets>2</bonus_sets>
+		<tblink>false</tblink>
+		<tu_points>10</tu_points>
+		<power_points>15</power_points>
+		<bonus_points>10</bonus_points>
+		<boni_per_set>3</boni_per_set>
+	</header>
+	<toss_up>
+		<number>1</number>
+		<question>
+			<instructions>Read the words from left to right.</instructions>
+			<text>Why did the chicken cross the road?</text>
+		</question>
+		<answer>
+			<instructions>Accept either, or clear knowledge equivalents.</instructions>
+			<al>
+				<la>To get to the other side.</la>
+				<la>To avoid his ex.</la>
+			</al>
+		</answer>
+	</toss_up>
+	<toss_up>
+		<number>2</number>
+		<points>70</points>
+		<question>
+			<text>Who was the President <power power_points="500" /> with the surname Adams <power /> who was not John Q. Adams?</text>
+		</question>
+		<answer>
+			<instructions>Do NOT acept John Q. Adams at any point.</instructions>
+			<al>
+				<la>John Adams</la>
+			</al>
+		</answer>
+	</toss_up>
+	<bonus_set>
+		<number>1</number>
+		<opener>A town is full of buildings.  Some tall, some short, some wide and some narrow.</opener>
+		<bonus>
+			<number>1</number>
+			<question>
+				<text>Who was the girl?</text>
+			</question>
+			<answer>
+				<al>
+					<la>Mary</la>
+				</al>
+			</answer>
+		</bonus>
+		<bonus>
+			<number>2</number>
+			<question>
+				<text>Who was the dog?</text>
+			</question>
+			<answer>
+				<al>
+					<la>Mungo</la>
+				</al>
+			</answer>
+		</bonus>
+		<bonus>
+			<number>3</number>
+			<question>
+				<text>Who was the mouse?</text>
+			</question>
+			<answer>
+				<al>
+					<la>Midge</la>
+				</al>
+			</answer>
+		</bonus>
+	</bonus_set>
+	<bonus_set>
+		<number>2</number>
+		<boni_in_set>4</boni_in_set>
+		<points_per_bonus>20</points_per_bonus>
+		<instructions>Do not mispronounce words</instructions>
+		<opener>Sometimes you need examples.  Here are some examples of examples.</opener>
+		<bonus>
+			<number>1</number>
+			<points>15</points>
+			<question>
+				<text>What is the first one?</text>
+			</question>
+			<answer>
+				<instructions>"Foo" is pronounced "phu".</instructions>
+				<al>
+					<la>Foo</la>
+				</al>
+			</answer>
+		</bonus>
+		<bonus>
+			<number>2</number>
+			<question>
+				<text>What is the second one?</text>
+			</question>
+			<answer>
+				<al>
+					<la>Bar</la>
+				</al>
+			</answer>
+		</bonus>
+		<bonus>
+			<number>3</number>
+			<points>25</points>
+			<question>
+				<text>What is the third one?</text>
+			</question>
+			<answer>
+				<al>
+					<la>Baz</la>
+				</al>
+			</answer>
+		</bonus>
+		<bonus>
+			<number>4</number>
+			<points>30</points>
+			<question>
+				<instructions>Note to Americans: this does not mean "quarter"</instructions>
+				<text>What is the fourth one?</text>
+			</question>
+			<answer>
+				<instructions>Accept any feasible pronunciation</instructions>
+				<al>
+					<la>Quux</la>
+				</al>
+			</answer>
+		</bonus>
+	</bonus_set>
+</quiz>

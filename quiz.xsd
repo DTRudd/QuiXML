@@ -1,0 +1,105 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<!-- This is the root tag. -->
+	<xs:element name="quiz">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="header_type" />
+				<xs:element name="toss_up" type="toss_up_type" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element name="bonus_set" type="bonus_set_type" minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="header_type">
+		<xs:sequence>
+			<xs:element name="title" type="xs:string" />
+			<xs:element name="description" type="xs:string" minOccurs="0" />
+			<xs:element name="toss_ups" type="xs:integer" />
+			<xs:element name="bonus_sets" type="xs:integer" />
+			<!-- If set to true, boni are linked to toss-ups, so if the toss-up goes dead, the bonus is skipped. -->
+			<xs:element name="tblink">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="true|false" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="tu_points" type="xs:integer" minOccurs="0" />
+			<xs:element name="power_points" type="xs:integer" minOccurs="0" />
+			<xs:element name="bonus_points" type="xs:integer" minOccurs="0" />
+			<xs:element name="boni_per_set" type="xs:integer" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="toss_up_type">
+		<!-- This is the unique ID number for the toss-up.  If tblink is set to true, the bonus set with
+		<xs:element name="title" type="xs:string" />
+		     the number set in the toss_ups attribute of the quiz tag. -->
+		<xs:sequence>
+			<xs:element name="number" type="xs:integer" />
+			<xs:element name="points" type="xs:integer" minOccurs="0" />
+			<xs:element name="question" type="toss_up_q_type" />
+			<xs:element name="answer" type="answer_type" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="toss_up_q_type">
+		<xs:sequence>
+			<xs:element name="instructions" type="xs:string" minOccurs="0"/>
+			<xs:element name="text">
+				<xs:complexType mixed="true">
+					<!-- Powers are indicated by a self-closing power tag.  Any number of
+					     powers can be included. -->
+					<xs:sequence>
+						<xs:element name="power" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:attribute name="power_points" type="xs:integer" default="15" />
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="bonus_q_type">
+		<xs:sequence>
+			<xs:element name="instructions" type="xs:string" minOccurs="0" />
+			<xs:element name="text" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="answer_type">
+		<xs:sequence>
+			<xs:element name="instructions" type="xs:string" minOccurs="0" />
+			<xs:element name="al" type="answer_list_type" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="answer_list_type">
+		<xs:sequence>
+			<xs:element name="la" type="xs:string" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="bonus_set_type">
+		<xs:sequence>
+			<xs:element name="number" type="xs:integer" />
+			<xs:element name="boni_in_set" type="xs:integer" minOccurs="0" />
+			<xs:element name="points_per_bonus" type="xs:integer" minOccurs="0"/>
+			<xs:element name="instructions" minOccurs="0" />
+			<xs:element name="opener" type="xs:string" />
+			<xs:element name="bonus" type="bonus_type" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="bonus_type">
+		<xs:sequence>
+			<xs:element name="number" type="xs:integer" />
+                        <xs:element name="points" type="xs:integer" minOccurs="0" />
+			<xs:element name="question" type="bonus_q_type" />
+			<xs:element name="answer" type="answer_type" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
