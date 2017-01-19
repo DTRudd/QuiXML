@@ -201,7 +201,6 @@ sub run_bs{
 	foreach my $bonus (@boni){
 		run_bonus($bonus,$outp,defined $ppb ? $ppb : $ext_ppb,$ext_bps,$bnum,$bonus_sets);
 	}
-	$outp = join("",$outp,"\\\\");
 	$_[1] = $outp;
 	$_[4] = $ext_num;
 }
