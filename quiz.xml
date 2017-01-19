@@ -1,7 +1,7 @@
 <quiz>
 	<header>
 		<title>Example Quiz</title>
-		<description>For the purposes of demonstrating proposed technology</description>
+		<description>For the demonstration proposed XML-powered quizzing, and for related purposes.</description>
 		<toss_ups>2</toss_ups>
 		<bonus_sets>2</bonus_sets>
 		<tblink>false</tblink>
@@ -19,8 +19,8 @@
 		<answer>
 			<instructions>Accept either, or clear knowledge equivalents.</instructions>
 			<al>
-				<la>To get to the other side.</la>
-				<la>To avoid his ex.</la>
+				<la>To get to the other side</la>
+				<la>To avoid his ex</la>
 			</al>
 		</answer>
 	</toss_up>

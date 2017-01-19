@@ -3,6 +3,7 @@ use warnings;
 use strict;
 use v5.20;
 use XML::LibXML;
+use Roman;
 
 #subroutine to validate file against quiz schema
 sub quiz_validate{
@@ -19,7 +20,7 @@ sub run_inst{
 	my @inst = $tag->getElementsByTagName("instructions");
 	if (scalar @inst > 0) {
 		my $inst_content = $inst[0]->textContent;
-		$outp = join("\n",$outp,"\\textit\{Instructions: $inst_content \}\\\\");
+		$outp = join("\n",$outp,"\\textit\{\(Note: $inst_content\)\}");
 		$_[1] = $outp;
 	}
 }
@@ -29,7 +30,7 @@ sub run_tu_q{
 	run_inst($tag,$outp);
 	my @text = $tag->getElementsByTagName("text");
 	my $text_content = $text[0]->textContent;
-	$outp = join("\n",$outp," $text_content \\\\");
+	$outp = join("  ",$outp," $text_content \\\\");
 	$_[1] = $outp;
 }
 
@@ -46,6 +47,7 @@ sub run_bq{
 sub run_ans{
 	my ($tag,$outp) = @_;
 	my @al = $tag->getElementsByTagName("al");
+	$outp = join("\n",$outp,"ANSWER: ");
 	run_al($al[0],$outp);
 	run_inst($tag,$outp);
 	$_[1] = $outp;
@@ -57,7 +59,12 @@ sub run_al{
 	$outp = join("\n",$outp,"");
 	foreach my $la (@la){
 		my $la_content = $la->textContent;
-		$outp = join(", ",$outp,"$la_content \\\\");
+		$outp = join(" ",$outp,"\\textbf\{$la_content\}");
+		if($la eq $la[$#la]){
+			$outp = join("",$outp,".\\\\");
+		} else {
+			$outp = join("",$outp,",");
+		}
 	}
 	$_[1] = $outp;
 }
@@ -139,7 +146,20 @@ sub validate_num{
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
 	$ext_num = $num;
 	$_[2] = $ext_num;
-	$outp = join("\n",$outp,"\\textbf\{$num\}.");
+	$outp = join("\n",$outp,"\\subsection*\{$num.\}");
+	$_[1] = $outp;
+	$num;
+}
+
+sub validate_num_bonus{
+	my ($tag,$outp,$ext_num,$string) = @_;
+	my @num = $tag->getElementsByTagName("number");
+	my $num = $num[0]->textContent;
+	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
+	$ext_num = $num;
+	$_[2] = $ext_num;
+	my $roman = roman($num);
+	$outp = join("\n",$outp,"\\subsubsection*\{$roman.\}");
 	$_[1] = $outp;
 	$num;
 }
@@ -153,7 +173,7 @@ sub run_tu{
 		die "No value set for points in toss-up $num." unless defined $ext_tup;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," \\textbf\{$points_txt\} points.");
+		$outp = join("",$outp," \\textit\{\\textbf\{$points_txt\} points.\}\\\\");
 	}
 	my @q = $tag->getElementsByTagName("question");
 	run_tu_q($q[0],$outp);
@@ -181,13 +201,14 @@ sub run_bs{
 	foreach my $bonus (@boni){
 		run_bonus($bonus,$outp,defined $ppb ? $ppb : $ext_ppb,$ext_bps,$bnum,$bonus_sets);
 	}
+	$outp = join("",$outp,"\\\\");
 	$_[1] = $outp;
 	$_[4] = $ext_num;
 }
 
 sub run_bonus {
 	my ($tag,$outp,$ext_ppb,$ext_bps,$ext_num,$bonus_sets) = @_;
-	my $num = validate_num($tag,$outp,$ext_num,"Bonus");
+	my $num = validate_num_bonus($tag,$outp,$ext_num,"Bonus");
 	my @points = $tag->getElementsByTagName("points");
 	if (scalar @points ==0) {
 		die "No value set for points in toss-up $num." unless defined $ext_ppb;
@@ -239,11 +260,12 @@ die "Incorrect number of bonus sets" if scalar @bs_tags != $bonus_sets;
 #evaluate tu and bonus tags
 my $qnum = 0;
 if ($tblink eq "false"){
+	$outp = join("\n",$outp,"\\section*\{Toss-ups\}\n") if $toss_ups > 0;
 	foreach my $tu_tag (@tu_tags){
 		run_tu($tu_tag,$outp,$tu_points,$qnum,$toss_ups);
 	}
 	$qnum = 0;
-	$outp = join("\n",$outp,"Bonus sets.");
+	$outp = join("\n",$outp,"\\section*\{Bonus sets\}\n") if $bonus_sets > 0;
 	foreach my $bs_tag (@bs_tags){
 		run_bs($bs_tag,$outp,$bonus_points,$boni_per_set,$qnum,$bonus_sets);
 	}
