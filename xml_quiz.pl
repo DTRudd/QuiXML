@@ -74,7 +74,9 @@ sub run_header{
 	my ($tag,$outp,$toss_ups,$bonus_sets,$tblink,$tu_points,$bonus_points,$boni_per_set,$description,$power_points) = @_;
 	#insert title
 	my $title = $tag->getChildrenByTagName("title")->get_node(1)->textContent;
-	$outp = join("\n",$outp,"\\title\{$title\}\n\\begin\{document\}\n\\begin\{abstract\}");
+
+	$outp = join("\n",$outp,"\\usepackage\{titlesec\}","\\titleformat\{\\subsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]","\\titleformat\{\\subsubsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]");
+	$outp = join("\n",$outp,"\\title\{$title\}","\\begin\{document\}","\\begin\{abstract\}");
 
 	#insert description
 	my @desc = $tag->getElementsByTagName("description");
@@ -146,7 +148,7 @@ sub validate_num{
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
 	$ext_num = $num;
 	$_[2] = $ext_num;
-	$outp = join("\n",$outp,"\\subsection*\{$num.\}");
+	$outp = join("\n",$outp,"\\subsection*\{\\textbf\{$num.\}\}");
 	$_[1] = $outp;
 	$num;
 }
@@ -159,7 +161,7 @@ sub validate_num_bonus{
 	$ext_num = $num;
 	$_[2] = $ext_num;
 	my $roman = roman($num);
-	$outp = join("\n",$outp,"\\subsubsection*\{$roman.\}");
+	$outp = join("\n",$outp,"\\subsubsection*\{\\textbf\{$roman.\}\}");
 	$_[1] = $outp;
 	$num;
 }
@@ -191,7 +193,7 @@ sub run_bs{
 	my $ppb;
 	if (scalar @points != 0){
 		$ppb = $points[0]->textContent;
-		$outp = join("\n",$outp,"$ppb points per bonus.");
+		$outp = join("\n",$outp,"\\textit\{$ppb points per bonus.\}");
 	}
 	run_inst($tag,$outp);
 	my @opener = $tag->getElementsByTagName("opener");
@@ -213,7 +215,7 @@ sub run_bonus {
 		die "No value set for points in toss-up $num." unless defined $ext_ppb;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," $ext_ppb points.");
+		$outp = join("",$outp," \\textit\{$ext_ppb points.\}");
 	}
 	my @bq = $tag->getElementsByTagName("question");
 	run_bq($bq[0],$outp);
