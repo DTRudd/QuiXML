@@ -175,7 +175,7 @@ sub run_tu{
 		die "No value set for points in toss-up $num." unless defined $ext_tup;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," \\textit\{\\textbf\{$points_txt\} points.\}\\\\");
+		$outp = join("",$outp," \\textit\{This toss-up is worth \\textbf\{$points_txt\} points.\}\\\\");
 	}
 	my @q = $tag->getElementsByTagName("question");
 	run_tu_q($q[0],$outp);
@@ -193,7 +193,7 @@ sub run_bs{
 	my $ppb;
 	if (scalar @points != 0){
 		$ppb = $points[0]->textContent;
-		$outp = join("\n",$outp,"\\textit\{$ppb points per bonus.\}");
+		$outp = join("\n",$outp,"\\textit\{These boni are worth \\textbfz{$ppb\} points each.\}");
 	}
 	run_inst($tag,$outp);
 	my @opener = $tag->getElementsByTagName("opener");
@@ -215,7 +215,7 @@ sub run_bonus {
 		die "No value set for points in toss-up $num." unless defined $ext_ppb;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," \\textit\{$ext_ppb points.\}");
+		$outp = join("",$outp," \\textit\{This bonus is worth \\textbf{$ext_ppb\} points.\}");
 	}
 	my @bq = $tag->getElementsByTagName("question");
 	run_bq($bq[0],$outp);
@@ -280,4 +280,5 @@ if ($tblink eq "false"){
 }
 $outp = join("\n",$outp,"\\end\{document\}\n");
 say $outp;
+
 
