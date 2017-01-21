@@ -280,5 +280,3 @@ if ($tblink eq "false"){
 }
 $outp = join("\n",$outp,"\\end\{document\}\n");
 say $outp;
-
-
