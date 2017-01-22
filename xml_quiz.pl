@@ -8,7 +8,7 @@ use Roman;
 #subroutine to validate file against quiz schema
 sub quiz_validate{
 	my ($input) = @_;
-	my $schema = XML::LibXML::Schema->new( location => "quiz.xsd" );
+	my $schema = XML::LibXML::Schema->new( location => 'quiz.xsd' );
 	eval {$schema->validate($input);};
 	if ($@) {
 		die "XML input is invalid with schema:\n$@";
@@ -17,133 +17,158 @@ sub quiz_validate{
 
 sub run_inst{
 	my ($tag,$outp) = @_;
-	my @inst = $tag->getElementsByTagName("instructions");
+	my @inst = $tag->getElementsByTagName('instructions');
 	if (scalar @inst > 0) {
 		my $inst_content = $inst[0]->textContent;
 		$outp = join("\n",$outp,"\\textit\{\(Note: $inst_content\)\}");
-		$_[1] = $outp;
 	}
+	return $outp;
 }
 
 sub run_tu_q{
 	my ($tag,$outp) = @_;
-	run_inst($tag,$outp);
-	my @text = $tag->getElementsByTagName("text");
+	$outp = run_inst($tag,$outp);
+	my @text = $tag->getElementsByTagName('text');
 	my $text_content = $text[0]->textContent;
-	$outp = join("  ",$outp," $text_content \\\\");
-	$_[1] = $outp;
+	$outp = join("  ",$outp,"$text_content \\\\");
+	return $outp;
 }
 
 
 sub run_bq{
 	my ($tag,$outp) = @_;
-	run_inst($tag,$outp);
-	my @text = $tag->getElementsByTagName("text");
+	$outp = run_inst($tag,$outp);
+	my @text = $tag->getElementsByTagName('text');
 	my $text_content = $text[0]->textContent;
-	$outp = join("\n",$outp," $text_content \\\\");
-	$_[1] = $outp;
+	$outp = join("\n",$outp,"$text_content\\\\");
+	return $outp;
 }
 
 sub run_ans{
 	my ($tag,$outp) = @_;
-	my @al = $tag->getElementsByTagName("al");
-	$outp = join("\n",$outp,"ANSWER: ");
-	run_al($al[0],$outp);
-	run_inst($tag,$outp);
-	$_[1] = $outp;
+	my @al = $tag->getElementsByTagName('al');
+	$outp = join("\n",$outp,'ANSWER: ');
+	$outp = run_al($al[0],$outp);
+	$outp = run_inst($tag,$outp);
+	return $outp;
 }
 
 sub run_al{
 	my ($tag,$outp) = @_;
-	my @la = $tag->getElementsByTagName("la");
-	$outp = join("\n",$outp,"");
+	my @la = $tag->getElementsByTagName('la');
+	$outp = join("\n",$outp,'');
 	foreach my $la (@la){
 		my $la_content = $la->textContent;
-		$outp = join(" ",$outp,"\\textbf\{$la_content\}");
+		$outp = join('',$outp,"\\textbf\{$la_content\}");
 		if($la eq $la[$#la]){
-			$outp = join("",$outp,".\\\\");
+			$outp = join('',$outp,".");
 		} else {
-			$outp = join("",$outp,",");
+			$outp = join('',$outp,', ');
 		}
 	}
-	$_[1] = $outp;
+	return $outp;
 }
 
 #subroutine to process the header tag
 sub run_header{
-	my ($tag,$outp,$toss_ups,$bonus_sets,$tblink,$tu_points,$bonus_points,$boni_per_set,$description,$power_points) = @_;
+	my ($tag,$outp) = @_;
 	#insert title
-	my $title = $tag->getChildrenByTagName("title")->get_node(1)->textContent;
-
-	$outp = join("\n",$outp,"\\usepackage\{titlesec\}","\\titleformat\{\\subsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]","\\titleformat\{\\subsubsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]");
+	my $title = $tag->getChildrenByTagName('title')->get_node(1)->textContent;
+	$outp = join("\n",$outp,"\\usepackage\{titlesec\}","\\titlespacing*\{\\subsubsection\}\{0pt\}\{0ex\}\{1.5ex plus .2ex\}","\\titleformat\{\\subsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]","\\titleformat\{\\subsubsection\}\[runin\]\{\}\{\}\{\}\{\}\[\]");
 	$outp = join("\n",$outp,"\\title\{$title\}","\\begin\{document\}","\\begin\{abstract\}");
-
-	#insert description
-	my @desc = $tag->getElementsByTagName("description");
-	if (scalar @desc > 0) {
-		$description = $desc[0]->textContent;
-		$outp = join("\n",$outp,"$description \\\\");
-	}
-
-	#insert tu and bonus points
-	my @tu = $tag->getElementsByTagName("toss_ups");
-	$toss_ups = $tu[0]->textContent;
-	$_[2] = $toss_ups;
-	my @bs = $tag->getElementsByTagName("bonus_sets");
-	$bonus_sets = $bs[0]->textContent;
-	$_[3] = $bonus_sets;
-	$outp = join("\n",$outp,"\\textbf\{$toss_ups\} toss-ups, \\textbf\{$bonus_sets\} bonus sets.");
-
-	#say whether to skip bonuses
-	my @tbl = $tag->getElementsByTagName("tblink");
-	$tblink = $tbl[0]->textContent;
-	$_[4] = $tblink;
-	if ($tblink eq "true") {
-		$outp = join("",$outp,"  Do not skip bonuses.");
-	} else {
-		$outp = join("",$outp,"  Skip bonuses.");
-	}
-
-	#insert points per toss-up
-	my @tup = $tag->getElementsByTagName("tu_points");
-	if (scalar @tup > 0) {
-		$tu_points = $tup[0]->textContent;
-		$outp = join("",$outp,"  \\textbf\{$tu_points\} points per toss-up.") if scalar @tup > 0;
-	}
-	$_[5] = $tu_points;
-
-	#insert points per bonus
-	my @bp = $tag->getElementsByTagName("bonus_points");
-	if (scalar @bp > 0){
-		$bonus_points = $bp[0]->textContent if scalar @bp > 0;
-		$outp = join("",$outp,"  \\textbf\{$bonus_points\} points per bonus.") if scalar @bp > 0;
-	}
-	$_[6] = $bonus_points;
-
-	#insert boni per set
-	my @bps = $tag->getElementsByTagName("boni_per_set");
-	if (scalar @bps > 0){
-		$boni_per_set = $bps[0]->textContent if scalar @bps > 0;
-		$outp = join("",$outp,"  \\textbf\{$boni_per_set\} boni per set.") if scalar @bps > 0;
-	}
-	$_[7] = $boni_per_set;
-
-	#insert points for a power
-	my @pp = $tag->getElementsByTagName("power_points");
-	if (scalar @pp > 0){
-		$power_points = $pp[0]->textContent if scalar @pp > 0;
-		$outp = join("",$outp,"  Powers are worth \\textbf\{$power_points\}.\\\\") if scalar @pp > 0;
-	}
-	$_[9] = $power_points;
-
-	#finish off
-	$outp = join("\n",$outp,"\\end\{abstract\}\n\\maketitle");
-	$_[1] = $outp;
+	return $outp;
 }
 
-sub validate_num{
+	#insert description
+sub get_desc{
+	my ($tag) = @_;
+	my @desc = $tag->getElementsByTagName('description');
+	if (scalar @desc > 0) {
+		my $description = $desc[0]->textContent;
+		return $description;
+	} else {
+		return 'NODESC';
+	}
+}
+
+	#insert tu and bonus points
+sub get_tus {
+	my ($tag) = @_;
+	my @tu = $tag->getElementsByTagName('toss_ups');
+	my $toss_ups = $tu[0]->textContent;
+	return $toss_ups;
+}
+
+sub get_bs {
+	my ($tag) = @_;
+	my @bs = $tag->getElementsByTagName('bonus_sets');
+	my $bonus_sets = $bs[0]->textContent;
+	return $bonus_sets;
+}
+
+sub get_tblink {
+	#say whether to skip bonuses
+	my ($tag) = @_;
+	my @tbl = $tag->getElementsByTagName('tblink');
+	my $tblink = $tbl[0]->textContent;
+	return $tblink;
+}
+
+sub get_tu_points {
+	#insert points per toss-up
+	my ($tag) = @_;
+	my @tup = $tag->getElementsByTagName('tu_points');
+	my $tu_points;
+	if (scalar @tup > 0) {
+		$tu_points = $tup[0]->textContent;
+	} else {
+		$tu_points = 'NOTUPOINTS';
+	}
+	return $tu_points;
+}
+
+sub get_bonus_points {
+	#insert points per bonus
+	my ($tag) = @_;
+	my @bp = $tag->getElementsByTagName('bonus_points');
+	my $bonus_points;
+	if (scalar @bp > 0){
+		$bonus_points = $bp[0]->textContent;
+	} else {
+		$bonus_points = 'NOBPOINTS';
+	}
+	return $bonus_points;
+}
+
+sub get_bps {
+	#insert boni per set
+	my ($tag) = @_;
+	my @bps = $tag->getElementsByTagName('boni_per_set');
+	my $boni_per_set;
+	if (scalar @bps > 0){
+		$boni_per_set = $bps[0]->textContent;
+	} else {
+		$boni_per_set = 'NOBPS';
+	}
+	return $boni_per_set;
+}
+
+sub get_pp {
+	#insert points for a power
+	my ($tag) = @_;
+	my @pp = $tag->getElementsByTagName('power_points');
+	my $power_points;
+	if (scalar @pp > 0){
+		$power_points = $pp[0]->textContent;
+	} else {
+		$power_points = 'NOPPS';
+	}
+	return $power_points;
+}
+
+sub validate_num {
 	my ($tag,$outp,$ext_num,$string) = @_;
-	my @num = $tag->getElementsByTagName("number");
+	my @num = $tag->getElementsByTagName('number');
 	my $num = $num[0]->textContent;
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
 	$ext_num = $num;
@@ -155,7 +180,7 @@ sub validate_num{
 
 sub validate_num_bonus{
 	my ($tag,$outp,$ext_num,$string) = @_;
-	my @num = $tag->getElementsByTagName("number");
+	my @num = $tag->getElementsByTagName('number');
 	my $num = $num[0]->textContent;
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
 	$ext_num = $num;
@@ -169,18 +194,18 @@ sub validate_num_bonus{
 #subroutine to process the toss-up tags
 sub run_tu{
 	my ($tag,$outp,$ext_tup,$ext_num,$toss_ups) = @_;
-	my $num = validate_num($tag,$outp,$ext_num,"Toss-up");
-	my @points = $tag->getElementsByTagName("points");
+	my $num = validate_num($tag,$outp,$ext_num,'Toss-up');
+	my @points = $tag->getElementsByTagName('points');
 	if (scalar @points == 0) {
 		die "No value set for points in toss-up $num." unless defined $ext_tup;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," \\textit\{This toss-up is worth \\textbf\{$points_txt\} points.\}\\\\");
+		$outp = join('',$outp," \\textit\{This toss-up is worth \\textbf\{$points_txt\} points.\}\\\\");
 	}
-	my @q = $tag->getElementsByTagName("question");
-	run_tu_q($q[0],$outp);
-	my @ans = $tag->getElementsByTagName("answer");
-	run_ans($ans[0],$outp);
+	my @q = $tag->getElementsByTagName('question');
+	$outp = run_tu_q($q[0],$outp);
+	my @ans = $tag->getElementsByTagName('answer');
+	$outp = run_ans($ans[0],$outp);
 	$_[1] = $outp;
 	$_[3] = $ext_num;
 }
@@ -188,18 +213,18 @@ sub run_tu{
 #subroutine to process the bonus set tags
 sub run_bs{
 	my ($tag,$outp,$ext_ppb,$ext_bps,$ext_num,$bonus_sets) = @_;
-	my $num = validate_num($tag,$outp,$ext_num,"Bonus set");
-	my @points = $tag->getElementsByTagName("points_per_bonus");
+	my $num = validate_num($tag,$outp,$ext_num,'Bonus set');
+	my @points = $tag->getElementsByTagName('points_per_bonus');
 	my $ppb;
 	if (scalar @points != 0){
 		$ppb = $points[0]->textContent;
-		$outp = join("\n",$outp,"\\textit\{These boni are worth \\textbfz{$ppb\} points each.\}");
+		$outp = join("\n",$outp,"\\textit\{These boni are worth \\textbf\{$ppb\} points each.\}");
 	}
-	run_inst($tag,$outp);
-	my @opener = $tag->getElementsByTagName("opener");
+	$outp = run_inst($tag,$outp);
+	my @opener = $tag->getElementsByTagName('opener');
 	$outp = join("\n",$outp,$opener[0]->textContent);
 	my $bnum = 0;
-	my @boni = $tag->getElementsByTagName("bonus");
+	my @boni = $tag->getElementsByTagName('bonus');
 	foreach my $bonus (@boni){
 		run_bonus($bonus,$outp,defined $ppb ? $ppb : $ext_ppb,$ext_bps,$bnum,$bonus_sets);
 	}
@@ -209,18 +234,18 @@ sub run_bs{
 
 sub run_bonus {
 	my ($tag,$outp,$ext_ppb,$ext_bps,$ext_num,$bonus_sets) = @_;
-	my $num = validate_num_bonus($tag,$outp,$ext_num,"Bonus");
-	my @points = $tag->getElementsByTagName("points");
-	if (scalar @points ==0) {
+	my $num = validate_num_bonus($tag,$outp,$ext_num,'Bonus');
+	my @points = $tag->getElementsByTagName('points');
+	if (scalar @points == 0) {
 		die "No value set for points in toss-up $num." unless defined $ext_ppb;
 	} else {
 		my $points_txt = $points[0]->textContent;
-		$outp = join("",$outp," \\textit\{This bonus is worth \\textbf{$ext_ppb\} points.\}");
+		$outp = join('',$outp," \\textit\{This bonus is worth \\textbf{$points_txt\} points.\}");
 	}
-	my @bq = $tag->getElementsByTagName("question");
-	run_bq($bq[0],$outp);
-	my @ans = $tag->getElementsByTagName("answer");
-	run_ans($ans[0],$outp);
+	my @bq = $tag->getElementsByTagName('question');
+	$outp = run_bq($bq[0],$outp);
+	my @ans = $tag->getElementsByTagName('answer');
+	$outp = run_ans($ans[0],$outp);
 	$_[1] = $outp;
 	$_[4] = $ext_num;
 }
@@ -233,34 +258,55 @@ my $outp = "\\documentclass\[12pt\]\{article\}";
 my $parser = XML::LibXML->new();
 my $file = "";
 while (<STDIN>){
-	$file = join("",$file,"$_\n");
+	$file = join('',$file,"$_\n");
 }
-my $dom = $parser->parse_string($file) or die "Cannot read file.";
+my $dom = $parser->parse_string($file) or die 'Cannot read file.';
 
 #validate it against schema
 quiz_validate($dom);
 
 #global quiz variables (may be overridden by local ones, exception thrown if undeclared and not overridden).
-my $toss_ups;
-my $bonus_sets;
-my $tblink;
-my $tu_points;
-my $bonus_points;
-my $boni_per_set;
-my $description;
-my $power_points;
 
 #find and evaluate header tag
-my @h_tag = $dom->documentElement()->getChildrenByTagName("header");
-run_header($h_tag[0],$outp,$toss_ups,$bonus_sets,$tblink,$tu_points,$bonus_points,$boni_per_set,$description,$power_points);
+my @h_tag = $dom->documentElement()->getChildrenByTagName('header');
+$outp = run_header($h_tag[0],$outp);
+
+my $description = get_desc($h_tag[0]);
+$outp = join("\n",$outp,"$description \\\\") unless $description eq 'NODESC';
+
+my $toss_ups = get_tus($h_tag[0]);
+my $bonus_sets = get_bs($h_tag[0]);
+$outp = join("\n",$outp,"\\textbf\{$toss_ups\} toss-ups, \\textbf\{$bonus_sets\} bonus sets.");
+
+my $tblink = get_tblink($h_tag[0]);
+if ($tblink eq 'true') {
+	$outp = join('',$outp,'  Do not skip bonuses.');
+} else {
+	$outp = join('',$outp,'  Skip bonuses.');
+}
+
+my $tu_points = get_tu_points($h_tag[0]);
+$outp = join('',$outp,"  \\textbf\{$tu_points\} points per toss-up.") unless $tu_points eq 'NOTUPOINTS';
+
+my $bonus_points = get_bonus_points($h_tag[0]);
+$outp = join('',$outp,"  \\textbf\{$bonus_points\} points per bonus.") unless $bonus_points eq 'NOBPOINTS';
+
+my $boni_per_set = get_bps($h_tag[0]);
+$outp = join('',$outp,"  \\textbf\{$boni_per_set\} boni per set.") unless $boni_per_set eq 'NOBPS';
+
+my $power_points = get_pp($h_tag[0]);
+$outp = join('',$outp,"  Powers are worth \\textbf\{$power_points\}.\\\\") unless $power_points eq 'NOPPS';
+
+$outp = join("\n",$outp,"\\end\{abstract\}\n\\maketitle");
+
 #find toss-up and bonus tags (if any)
-my @tu_tags = $dom->documentElement()->getChildrenByTagName("toss_up");
-my @bs_tags = $dom->documentElement()->getChildrenByTagName("bonus_set");
-die "Incorrect number of toss-ups" if scalar @tu_tags != $toss_ups;
-die "Incorrect number of bonus sets" if scalar @bs_tags != $bonus_sets;
+my @tu_tags = $dom->documentElement()->getChildrenByTagName('toss_up');
+my @bs_tags = $dom->documentElement()->getChildrenByTagName('bonus_set');
+die 'Incorrect number of toss-ups' if scalar @tu_tags != $toss_ups;
+die 'Incorrect number of bonus sets' if scalar @bs_tags != $bonus_sets;
 #evaluate tu and bonus tags
 my $qnum = 0;
-if ($tblink eq "false"){
+if ($tblink eq 'false'){
 	$outp = join("\n",$outp,"\\section*\{Toss-ups\}\n") if $toss_ups > 0;
 	foreach my $tu_tag (@tu_tags){
 		run_tu($tu_tag,$outp,$tu_points,$qnum,$toss_ups);
