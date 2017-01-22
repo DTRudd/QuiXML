@@ -60,7 +60,7 @@ sub run_al{
 	foreach my $la (@la){
 		my $la_content = $la->textContent;
 		$outp = join('',$outp,"\\textbf\{$la_content\}");
-		if($la eq $la[$#la]){
+		if($la eq $la[-1]){
 			$outp = join('',$outp,'.');
 		} else {
 			$outp = join('',$outp,', ');
@@ -248,7 +248,7 @@ my $outp = "\\documentclass\[12pt\]\{article\}";
 #slurp the XML and parse it into DOM
 my $parser = XML::LibXML->new();
 my $file = "";
-while (<STDIN>){
+while (<ARGV>){
 	$file = join('',$file,"$_\n");
 }
 my $dom = $parser->parse_string($file) or die 'Cannot read file.';
