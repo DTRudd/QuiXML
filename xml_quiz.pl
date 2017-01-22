@@ -30,7 +30,7 @@ sub run_tu_q{
 	$outp = run_inst($tag,$outp);
 	my @text = $tag->getElementsByTagName('text');
 	my $text_content = $text[0]->textContent;
-	$outp = join("  ",$outp,"$text_content \\\\");
+	$outp = join('  ',$outp,"$text_content \\\\");
 	return $outp;
 }
 
@@ -61,7 +61,7 @@ sub run_al{
 		my $la_content = $la->textContent;
 		$outp = join('',$outp,"\\textbf\{$la_content\}");
 		if($la eq $la[$#la]){
-			$outp = join('',$outp,".");
+			$outp = join('',$outp,'.');
 		} else {
 			$outp = join('',$outp,', ');
 		}
@@ -171,30 +171,23 @@ sub validate_num {
 	my @num = $tag->getElementsByTagName('number');
 	my $num = $num[0]->textContent;
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
-	$ext_num = $num;
-	$_[2] = $ext_num;
 	$outp = join("\n",$outp,"\\subsection*\{\\textbf\{$num.\}\}");
-	$_[1] = $outp;
-	$num;
+	return $outp;
 }
 
-sub validate_num_bonus{
+sub validate_num_roman{
 	my ($tag,$outp,$ext_num,$string) = @_;
 	my @num = $tag->getElementsByTagName('number');
 	my $num = $num[0]->textContent;
 	die "$string $num is incorrectly numbered." unless $num == $ext_num + 1;
-	$ext_num = $num;
-	$_[2] = $ext_num;
 	my $roman = roman($num);
 	$outp = join("\n",$outp,"\\subsubsection*\{\\textbf\{$roman.\}\}");
-	$_[1] = $outp;
-	$num;
+	return $outp;
 }
 
 #subroutine to process the toss-up tags
 sub run_tu{
-	my ($tag,$outp,$ext_tup,$ext_num,$toss_ups) = @_;
-	my $num = validate_num($tag,$outp,$ext_num,'Toss-up');
+	my ($tag,$outp,$ext_tup,$num,$toss_ups) = @_;
 	my @points = $tag->getElementsByTagName('points');
 	if (scalar @points == 0) {
 		die "No value set for points in toss-up $num." unless defined $ext_tup;
@@ -206,14 +199,12 @@ sub run_tu{
 	$outp = run_tu_q($q[0],$outp);
 	my @ans = $tag->getElementsByTagName('answer');
 	$outp = run_ans($ans[0],$outp);
-	$_[1] = $outp;
-	$_[3] = $ext_num;
+	return $outp;
 }
 
 #subroutine to process the bonus set tags
 sub run_bs{
-	my ($tag,$outp,$ext_ppb,$ext_bps,$ext_num,$bonus_sets) = @_;
-	my $num = validate_num($tag,$outp,$ext_num,'Bonus set');
+	my ($tag,$outp,$ext_ppb,$ext_bps,$bonus_sets) = @_;
 	my @points = $tag->getElementsByTagName('points_per_bonus');
 	my $ppb;
 	if (scalar @points != 0){
@@ -223,20 +214,21 @@ sub run_bs{
 	$outp = run_inst($tag,$outp);
 	my @opener = $tag->getElementsByTagName('opener');
 	$outp = join("\n",$outp,$opener[0]->textContent);
-	my $bnum = 0;
+	my $acc = 0;
 	my @boni = $tag->getElementsByTagName('bonus');
 	foreach my $bonus (@boni){
-		run_bonus($bonus,$outp,defined $ppb ? $ppb : $ext_ppb,$ext_bps,$bnum,$bonus_sets);
+		$outp = validate_num_roman($bonus,$outp,$acc,'Bonus');
+		$outp = run_bonus($bonus,$outp,defined $ppb ? $ppb : $ext_ppb,$ext_bps,$bonus_sets,$acc);
+		$acc++;
 	}
-	$_[1] = $outp;
-	$_[4] = $ext_num;
+	return $outp;
 }
 
 sub run_bonus {
-	my ($tag,$outp,$ext_ppb,$ext_bps,$ext_num,$bonus_sets) = @_;
-	my $num = validate_num_bonus($tag,$outp,$ext_num,'Bonus');
+	my ($tag,$outp,$ext_ppb,$ext_bps,$bonus_sets,$acc) = @_;
 	my @points = $tag->getElementsByTagName('points');
 	if (scalar @points == 0) {
+		my $num = $acc+1;
 		die "No value set for points in toss-up $num." unless defined $ext_ppb;
 	} else {
 		my $points_txt = $points[0]->textContent;
@@ -246,8 +238,7 @@ sub run_bonus {
 	$outp = run_bq($bq[0],$outp);
 	my @ans = $tag->getElementsByTagName('answer');
 	$outp = run_ans($ans[0],$outp);
-	$_[1] = $outp;
-	$_[4] = $ext_num;
+	return $outp;
 }
 
 #main program
@@ -304,24 +295,34 @@ my @tu_tags = $dom->documentElement()->getChildrenByTagName('toss_up');
 my @bs_tags = $dom->documentElement()->getChildrenByTagName('bonus_set');
 die 'Incorrect number of toss-ups' if scalar @tu_tags != $toss_ups;
 die 'Incorrect number of bonus sets' if scalar @bs_tags != $bonus_sets;
+
 #evaluate tu and bonus tags
-my $qnum = 0;
+my $acc = 0;
 if ($tblink eq 'false'){
 	$outp = join("\n",$outp,"\\section*\{Toss-ups\}\n") if $toss_ups > 0;
 	foreach my $tu_tag (@tu_tags){
-		run_tu($tu_tag,$outp,$tu_points,$qnum,$toss_ups);
+		$outp = validate_num($tu_tag,$outp,$acc,'Toss-up');
+		$acc++;
+		$outp = run_tu($tu_tag,$outp,$tu_points,$acc,$toss_ups);
 	}
-	$qnum = 0;
+	$acc = 0;
 	$outp = join("\n",$outp,"\\section*\{Bonus sets\}\n") if $bonus_sets > 0;
 	foreach my $bs_tag (@bs_tags){
-		run_bs($bs_tag,$outp,$bonus_points,$boni_per_set,$qnum,$bonus_sets);
+		$outp = validate_num($bs_tag,$outp,$acc,'Bonus set');
+		$acc++;
+		$outp = run_bs($bs_tag,$outp,$bonus_points,$boni_per_set,$acc,$bonus_sets);
 	}
 } else {
-	my $acc = 0;
 	while($acc < ($toss_ups >= $bonus_sets ? $toss_ups : $bonus_sets)){
-		run_tu($tu_tags[$acc],$outp,$tu_points,$qnum,$toss_ups) if $acc < scalar @tu_tags;
-		run_bs($bs_tags[$acc],$outp,$bonus_points,$boni_per_set,$qnum,$bonus_sets) if $acc < scalar @bs_tags;
-		$qnum++;
+		if ($acc < scalar @tu_tags) {
+			$outp = validate_num($tu_tags[$acc],$outp,$acc,'Toss-up');
+			$outp = run_tu($tu_tags[$acc],$outp,$tu_points,$toss_ups);
+		}
+		if ($acc < scalar @bs_tags) {
+			$outp = validate_num($tu_tags[$acc],$outp,$acc,'Bonus set');
+			$outp = run_bs($bs_tags[$acc],$outp,$bonus_points,$boni_per_set,$bonus_sets);
+		}
+		$acc++;
 	}
 }
 $outp = join("\n",$outp,"\\end\{document\}\n");
