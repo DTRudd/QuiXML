@@ -3,6 +3,55 @@ The suite, as it stands, consists of an XML schema and a perl script.
 The schema can be used to validate quiz XML files, while the perl script turns xml files into tex.
 The script runs as a filter, i.e. of the form cat test.xml | ./xml_quiz.pl | pdflatex or ./xml_quiz.pl < test.xml > test.tex
 That sort of thing.  You can also use it with files as an argument, i.e. ./xml_quiz test.xml | pdflatex
-Description of the proposed XML quiz format forthcoming.
 
+Here is a discussion of the QuiXML format:
+
+	The root tag of all QuiXML files should be "quiz".  This tag contains no attributes.
+		The first tag in "quiz" is "header".  This contains information about points, number of questions, etc.
+		Following that are all the "toss_up" and "bonus_set" tags.  Neither of these tags are required to be in your file, and there is no upper bound on their appearance.
+		What is required is that all "toss_up" tags appear before the "bonus_set" tags.  It is not required that they be displayed in this manner in an application, of course.
+	
+		A header contains the following tags, in this order:
+			"title", the name of the quiz.
+			"description", and optional description of the quiz.
+			"toss_ups", the number of "toss_up" tags in the quiz.  This is required to match the actual number!
+			"bonus_sets", the number of "bonus_set" tags in the quiz.  As with "toss_ups", this should match the number of bonus sets actually in the file.
+			"tblink": this can be either "true" or "false" - if true, bonus sets are skipped if the toss-up they share a number with goes dead, otherwise not.
+			"tu_points": the base number of points per toss-up.  Optional but recommended.
+			"power_points": the base number of points for a power.  Optional but recommended.
+			"bonus_points": the base number of points for a bonus question.  Optional but recommended.
+			"boni_per_set": the base number of boni in a set.  Optional but recommended.
+	
+		Each "toss_up" tag contains:
+			A unique "number" tag, which should start at 1 and increase sequentially.
+			Optionally, a "points" tag, which overrides the base number of points for a toss-up.
+				If the base number is not defined and this tag is not present for any toss-up, the file is invalid.
+			A "question" tag, which will be explained further down.
+			An "answer" tag, which will also be explained further down.
+	
+			The "question" tag of a "toss_up" tag consists of:
+				An "instructions" tag, containing notes for the reader.
+				A "text" tag, which contains both the text of the question and any "power" tags.
+					"power" tags can occur anywhere in the text, and have an optional attribute "power_points", for the number of points that power is worth.
+						If any "power" tag does not contain any attributes and "power_points" was not defined in the header, the file is invalid.
+
+			An "answer" tag contains:
+				An "instructions" tag, containing notes for the reader, including prompts etc..
+				An "al" tag, which is a list of all the possible answers.
+					These answers are contained in "la" tags.
+
+		A "bonus_set" tag contains:
+			A unique "number" tag, again starting at 1 and increasing sequentially.
+			An optional "boni_in_set" tag, which defines the number of questions in a set.
+				If this is not set in the tag nor in the header, the file is invalid.
+			An optional "points_per_bonus" tag, which defines the number of points for a question.
+			An optional "instructions" tag, containing instructions for the reader, specifically about:
+			The "opener" tag, which introduces the set.
+			A number of "bonus" tags, the same number as defined in "boni_per_set", either in this tag or the header.
+	
+			A "bonus" tag consists of:
+				A unique "number" tag - again, start at 1 and increase sequentially.
+				An optional "points" tag - if the points for a bonus is not set here, in the "bonus_set" tag or in the header, the file is invalid.
+				A "question" tag, as described above but without powers.
+				An "answer" tag, as described above.
 
