@@ -1,0 +1,8 @@
+Welcome to QuiXML.  This software is currently somewhere in the region of alpha.
+The suite, as it stands, consists of an XML schema and a perl script.
+The schema can be used to validate quiz XML files, while the perl script turns xml files into tex.
+The script runs as a filter, i.e. of the form cat test.xml | ./xml_quiz.pl | pdflatex or ./xml_quiz.pl < test.xml > test.tex
+That sort of thing.  You can also use it with files as an argument, i.e. ./xml_quiz test.xml | pdflatex
+Description of the proposed XML quiz format forthcoming.
+
+
