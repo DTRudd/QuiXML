@@ -62,16 +62,32 @@ $acc = 1;
 my $bps;
 if ($header->exists('./boni_per_set')){
 	$bps = $header->findnodes('./boni_per_set')->shift()->textContent;
+	say "bpsx is $bps";
 }
 my @bps = $quiz->findnodes('./bonus_set');
+my @bps_val = @bps;
 foreach(@bs){
 	if ($_->exists('./boni_in_set')){
-		$bps = $_->findnodes('./boni_in_set')->shift()->textContent;
+		$bps_val[$acc-1] = $_->findnodes('./boni_in_set')->shift()->textContent;
 	} elsif (defined $bps) {
+		$bps_val[$acc-1] = $bps;
 	} else {
 		my $b_p_s = $_->findnodes('./number')->shift()->textContent;
 		die "No boni-per-set defined for bonus set $b_p_s";
 	}
+	$acc++;
+}
+foreach(@bs){
+	$acc = 1;
+	my $bsnum = $_->findnodes('./number')->shift()->textContent;
+	my @boni = $_->findnodes('./bonus/number');
+	foreach (@boni){
+		$_ = $_->textContent;
+		die "Bonus question $_ in set $bsnum is incorrectly numbered" if $_ != $acc;
+		die "Too many bonus questions in set $bsnum" if $_ > $bps_val[$bsnum-1];
+		$acc++;
+	}
+	die "Not enough bonus questions in set $bsnum" if $acc < $bps_val[$bsnum-1];
 }
 
-
+say "Bonus questions numbered correctly.";
