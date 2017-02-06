@@ -28,6 +28,7 @@
 			<xs:element name="tu_points" type="xs:integer" minOccurs="0" />
 			<xs:element name="power_points" type="xs:integer" minOccurs="0" />
 			<xs:element name="bonus_points" type="xs:integer" minOccurs="0" />
+			<xs:element name="neg_points" type="xs:integer" minOccurs="0" />
 			<xs:element name="boni_per_set" type="xs:integer" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
