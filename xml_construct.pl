@@ -21,36 +21,57 @@ while (<ARGV>){
 }
 my $dom = $parser->parse_string($file) or die 'Cannot read file.';
 
-#validate it against schema
 quiz_validate($dom);
 
-my @tossups = $dom->findnodes('/quiz/header/toss_ups');
-my $tossups = $tossups[0]->textContent;
-my @tus = $dom->findnodes('/quiz/toss_up/number');
+#extra validation against schema
+my $quiz = $dom->findnodes('/quiz')->shift();
+my $header = $quiz->findnodes('./header')->shift();
+my $tossups = $header->findnodes('./toss_ups')->shift()->textContent;
+my @tus = $quiz->findnodes('./toss_up');
+my @tunums = @tus;
+foreach(@tunums){
+	$_ = $_->findnodes('./number')->shift()->textContent;
+}
 my $acc = 1;
-foreach(@tus){
-	my $tunum = $_->textContent;
-	die "Toss-up $tunum is incorrectly numbered" if $tunum != $acc;
-	die "Too many toss-ups" if $tunum > $tossups;
+foreach(@tunums){
+	die "Toss-up $_ is incorrectly numbered" if $_ != $acc;
+	die "Too many toss-ups" if $_ > $tossups;
 	$acc++;
 }
 die "Not enough toss-ups" if $acc < $tossups;
 
-my @bonussets = $dom->findnodes('/quiz/header/bonus_sets');
-my $bonussets = $bonussets[0]->textContent;
-my @bs = $dom->findnodes('/quiz/bonus_set/number');
+say "Toss-ups numbered correctly.";
+
+my $bonussets = $header->findnodes('bonus_sets')->shift()->textContent;
+my @bs = $quiz->findnodes('./bonus_set');
+my @bsnums = @bs;
+foreach(@bsnums){
+	$_ = $_->findnodes('./number')->shift()->textContent;
+}
 $acc = 1;
-foreach(@bs){
-	my $bsnum = $_->textContent;
-	die "Bonus set $bsnum is incorrectly numbered" if $bsnum != $acc;
-	die "Too many bonus sets" if $bsnum > $bonussets;
+foreach(@bsnums){
+	die "Bonus set $_ is incorrectly numbered" if $_ != $acc;
+	die "Too many bonus sets" if $_ > $bonussets;
 	$acc++;
 }
 die "Not enough bonus sets" if $acc < $bonussets;
 
+say "Bonus sets numbered correctly.";
+
 $acc = 1;
+my $bps;
+if ($header->exists('./boni_per_set')){
+	$bps = $header->findnodes('./boni_per_set')->shift()->textContent;
+}
+my @bps = $quiz->findnodes('./bonus_set');
+foreach(@bs){
+	if ($_->exists('./boni_in_set')){
+		$bps = $_->findnodes('./boni_in_set')->shift()->textContent;
+	} elsif (defined $bps) {
+	} else {
+		my $b_p_s = $_->findnodes('./number')->shift()->textContent;
+		die "No boni-per-set defined for bonus set $b_p_s";
+	}
+}
 
-my @bps = $dom->findnodes('/quiz/header/boni_per_set');
-my $bps = $bps[0]->textContent ;
 
-my @bis = $dom->findnodes('/quiz/bonus_set/boni_in_set');
