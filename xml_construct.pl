@@ -21,13 +21,18 @@ while (<ARGV>){
 }
 my $dom = $parser->parse_string($file) or die 'Cannot read file.';
 
+#validate against schema
 quiz_validate($dom);
 
-#extra validation against schema
+#non-schema validation
+
+#get quiz, header, toss-up and bonus-set locations
 my $quiz = $dom->findnodes('/quiz')->shift();
 my $header = $quiz->findnodes('./header')->shift();
 my $tossups = $header->findnodes('./toss_ups')->shift()->textContent;
 my @tus = $quiz->findnodes('./toss_up');
+
+#validate toss-up numbers
 my @tunums = @tus;
 foreach(@tunums){
 	$_ = $_->findnodes('./number')->shift()->textContent;
@@ -42,6 +47,7 @@ die "Not enough toss-ups" if $acc < $tossups;
 
 say "Toss-ups numbered correctly.";
 
+#validate bonus set numbers
 my $bonussets = $header->findnodes('bonus_sets')->shift()->textContent;
 my @bs = $quiz->findnodes('./bonus_set');
 my @bsnums = @bs;
@@ -58,6 +64,7 @@ die "Not enough bonus sets" if $acc < $bonussets;
 
 say "Bonus sets numbered correctly.";
 
+#validate bonus numbers for each set
 $acc = 1;
 my $bps;
 if ($header->exists('./boni_per_set')){
