@@ -26,9 +26,8 @@
 				</xs:simpleType>
 			</xs:element>
 			<xs:element name="tu_points" type="xs:integer" minOccurs="0" />
-			<xs:element name="power_points" type="xs:integer" minOccurs="0" />
-			<xs:element name="bonus_points" type="xs:integer" minOccurs="0" />
 			<xs:element name="neg_points" type="xs:integer" minOccurs="0" />
+			<xs:element name="bonus_points" type="xs:integer" minOccurs="0" />
 			<xs:element name="boni_per_set" type="xs:integer" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
@@ -53,7 +52,9 @@
 					<!-- Powers and negs are indicated with respective tags.
 						Self-closing tags denote a return to the default toss-up value (for powers)
 						or the default neg value (for negs).  If there is no default value, the xml is
-						invalid. -->
+						invalid. If neg_points was declared in the header, every question is treated as if
+						there was an empty neg tag at the start, otherwise question is assumed to have no
+						negs until declared. -->
 					<xs:choice minOccurs="0" maxOccurs="unbounded">
 						<xs:element name="power" minOccurs="0" maxOccurs="unbounded" type="maybe_integer" />
 						<xs:element name="neg" minOccurs="0" maxOccurs="unbounded" type="maybe_integer" />
