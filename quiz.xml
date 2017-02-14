@@ -28,7 +28,7 @@
 		<number>2</number>
 		<points>70</points>
 		<question>
-			<text><power>500</power>Who was the President <power /> with the surname <neg>-800</neg>Adams <power /><neg /> who was not John Q. Adams?</text>
+			<text><power>500</power>Who was the President with the surname <neg>-800</neg>Adams <power /><neg /> who was not John Q. Adams?</text>
 		</question>
 		<answer>
 			<instructions>Do NOT acept John Q. Adams at any point.</instructions>

@@ -48,25 +48,31 @@ if ($tossups != 0){
 
 	say "Toss-ups numbered correctly.";
 
-	#validate powers and negs
+	#validate points, powers and negs
 	my $neg_points;
-	my $power_points;
+	my $tu_points;
 
-	if ($header->exists('./power_points')){
-		$power_points = $header->findnodes('./power_points')->shift()->textContent;
-	}
 	if ($header->exists('./neg_points')){
 		$neg_points = $header->findnodes('./neg_points')->shift()->textContent;
 	}
+	if ($header->exists('./tu_points')){
+		$tu_points = $header->findnodes('./tu_points')->shift()->textContent;
+	}
+	$acc = 1;
 	foreach (@tus){
+		if (!($_->exists('./points') or defined $tu_points)){
+			die "Points not defined for question $acc";
+		}
 		my $text = $_->findnodes('./question/text')->shift();
 		my @tchildren = $text->childNodes();
-		foreach(@tchildren){
-			say $_->nodeType;
-			say;
+		foreach(@tchildren){		#if empty neg tag without neg_points defined
+			if ($_->nodeType == 1 && $_->nodeName eq "neg" && $_->textContent eq "" && !defined $neg_points){
+				die "Neg points not defined for question $acc";
+			}
 		}
+		$acc++;
 	}
-
+	say "Toss-up points correctly indicated.";
 } else {
 	say "No toss-ups.";
 }
@@ -93,19 +99,16 @@ if ($bonussets != 0){
 	my $bps;
 	if ($header->exists('./boni_per_set')){
 		$bps = $header->findnodes('./boni_per_set')->shift()->textContent;
-		say "bpsx is $bps";
 	}
 	my @bps = $quiz->findnodes('./bonus_set');
 	my @bps_val = @bps;
 	foreach(@bs){
+		my $bpstemp;
 		if ($_->exists('./boni_in_set')){
-			$bps_val[$acc-1] = $_->findnodes('./boni_in_set')->shift()->textContent;
-		} elsif (defined $bps) {
-			$bps_val[$acc-1] = $bps;
-		} else {
-			my $b_p_s = $_->findnodes('./number')->shift()->textContent;
-			die "No boni-per-set defined for bonus set $b_p_s";
+			$bpstemp = $_->findnodes('./boni_in_set')->shift()->textContent;
 		}
+		my $b_p_s = $_->findnodes('./number')->shift()->textContent;
+		$bps_val[$acc-1] = $bpstemp // $bps // die "No boni-per-set defined for bonus set $b_p_s";
 		$acc++;
 	}
 	foreach(@bs){
@@ -120,8 +123,26 @@ if ($bonussets != 0){
 		}
 		die "Not enough bonus questions in set $bsnum" if $acc < $bps_val[$bsnum-1];
 	}
-
 	say "Bonus questions numbered correctly.";
+
+	#validate bonus set points
+	my $bs_points;
+	if ($header->exists('./bonus_points')){
+		$bs_points = $header->findnodes('./bonus_points')->shift()->textContent;
+	}
+	$acc = 1;
+	foreach my $xx (@bs){
+		my @boni = $xx->findnodes('./bonus');
+		my $bqacc = 1;
+		foreach (@boni){
+			if (!($_->exists('./points') or $_->exists('../points_per_bonus') or $header->exists('./bonus_points'))){
+				die "No points defined for bonus question $bqacc in set $acc";
+			}
+			$bqacc++;
+		}
+		$acc++;
+	}
+	say "Bonus set points allocated correctly."	
 } else {
 	say "No bonus sets.";
 }
