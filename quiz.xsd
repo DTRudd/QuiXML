@@ -50,19 +50,28 @@
 			<xs:element name="instructions" type="xs:string" minOccurs="0"/>
 			<xs:element name="text">
 				<xs:complexType mixed="true">
-					<!-- Powers are indicated by a self-closing power tag.  Any number of
-					     powers can be included. -->
-					<xs:sequence>
-						<xs:element name="power" minOccurs="0" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:attribute name="power_points" type="xs:integer" default="15" />
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
+					<!-- Powers and negs are indicated with respective tags.
+						Self-closing tags denote a return to the default toss-up value (for powers)
+						or the default neg value (for negs).  If there is no default value, the xml is
+						invalid. -->
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="power" minOccurs="0" maxOccurs="unbounded" type="maybe_integer" />
+						<xs:element name="neg" minOccurs="0" maxOccurs="unbounded" type="maybe_integer" />
+					</xs:choice>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+
+	<xs:simpleType name="empty_string">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="maybe_integer">
+		<xs:union memberTypes="xs:integer empty_string" />
+	</xs:simpleType>
 
 	<xs:complexType name="bonus_q_type">
 		<xs:sequence>

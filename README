@@ -19,6 +19,7 @@ Here is a discussion of the QuiXML format:
 			"tblink": this can be either "true" or "false" - if true, bonus sets are skipped if the toss-up they share a number with goes dead, otherwise not.
 			"tu_points": the base number of points per toss-up.  Optional but recommended.
 			"power_points": the base number of points for a power.  Optional but recommended.
+			"neg_points": the base number of points for a neg.  Optional but recommended.
 			"bonus_points": the base number of points for a bonus question.  Optional but recommended.
 			"boni_per_set": the base number of boni in a set.  Optional but recommended.
 	
@@ -32,8 +33,10 @@ Here is a discussion of the QuiXML format:
 			The "question" tag of a "toss_up" tag consists of:
 				An "instructions" tag, containing notes for the reader.
 				A "text" tag, which contains both the text of the question and any "power" tags.
-					"power" tags can occur anywhere in the text, and have an optional attribute "power_points", for the number of points that power is worth.
-						If any "power" tag does not contain any attributes and "power_points" was not defined in the header, the file is invalid.
+					"power" and "neg" tags can occur anywhere in the text.  They have two forms:
+						1) enclosing a number - the question/neg is worth that many points until the next power/neg tag
+						2) self-closing - the question/neg reverts back to the default score until the next power/neg tag
+						If there is a self-closing tag without a default value, the file is invalid.
 
 			An "answer" tag contains:
 				An "instructions" tag, containing notes for the reader, including prompts etc..
