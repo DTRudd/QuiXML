@@ -1,13 +1,12 @@
 #!/usr/bin/perl
-package QuiXML::Instructions;
+package QuiXML::Text;
 
 use warnings;
 use strict;
 use v5.20;
-use parent QuiXML::Writeable;
+use parent QuiXML::TUQAtom;
 
 sub new{
-	#attributes;
 	my $class = shift;
 	my $text = shift;
 
@@ -29,4 +28,3 @@ sub write{
 	my $self = shift;
 	return $self->text;
 }
-

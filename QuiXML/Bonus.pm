@@ -6,6 +6,7 @@ use strict;
 use v5.20;
 use QuiXML::Answer;
 use QuiXML::BonusQuestion;
+use parent QuiXML::Writeable;
 
 sub new{
 	#attributes;

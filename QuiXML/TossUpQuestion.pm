@@ -5,12 +5,14 @@ use warnings;
 use strict;
 use v5.20;
 use QuiXML::Instructions;
+use QuiXML::TUQAtom;
+use parent QuiXML::Writeable;
 
 sub new{
 	#attributes;
 	my $class = shift;
 	my $instructions = shift;
-	my $text = shift; #array ref of text blocks and neg/power tags
+	my $text = shift; #array ref of TUAtom objects
 
 	my $self = {};
 	bless($self,$class);
@@ -42,7 +44,7 @@ sub write{
 	my $text = $self->text;
 	my @text = @$text;
 	foreach(@text){
-		
+		$outp = join('',$outp,$_->write);
 	}
 	$outp = join('  ',$outp,"\\newline");
 	return $outp;

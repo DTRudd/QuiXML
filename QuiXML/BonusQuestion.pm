@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use v5.20;
 use QuiXML::Instructions;
+use parent QuiXML::Writeable;
 
 sub new{
 	#attributes;

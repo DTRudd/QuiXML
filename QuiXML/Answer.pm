@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use v5.20;
 use QuiXML::Instructions;
+use parent QuiXML::Writeable;
 
 sub new{
 	#attributes;
@@ -39,7 +40,7 @@ sub write{
 	my $self = shift;
 	my $outp = '';
 	$outp = join("\n",$outp,$self->instructions->write,'ANSWER:');
-	my $answerList = $self->{answerList};
+	my $answerList = $self->answerList;
 	my @answerList = @$answerList;
 	foreach(@answerList){
 		$outp = join('',$outp,"\\textbf\{$_\}");
